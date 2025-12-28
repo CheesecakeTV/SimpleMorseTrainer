@@ -1,3 +1,4 @@
+import SwiftGUI as sg
 
 SHORT = "."
 LONG = "-"
@@ -38,3 +39,6 @@ LETTERS = {
 
 LETTERS = {key:val.replace(".", SHORT).replace("-", LONG) for key,val in LETTERS.items()}
 
+# Colors
+GREEN = sg.Color.SpringGreen4
+RED = sg.Color.OrangeRed3
