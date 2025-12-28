@@ -1,6 +1,6 @@
 import SwiftGUI as sg
 import trainers
-from trainers import LetterToMorse, MorseToLetter
+from trainers import LetterToMorse, MorseToLetter, SingleLettersMixed
 
 
 class MainMenu(sg.BasePopupNonblocking):
@@ -9,7 +9,7 @@ class MainMenu(sg.BasePopupNonblocking):
 
         layout = [
             [
-                self._make_button_group("Single letters", LetterToMorse, MorseToLetter)
+                self._make_button_group("Single letters", LetterToMorse, MorseToLetter, SingleLettersMixed)
             ]
         ]
 

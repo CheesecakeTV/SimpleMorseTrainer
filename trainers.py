@@ -163,3 +163,23 @@ class LetterToMorse(MorseToLetter):
 
     def input_changed(self):
         pass    # Deactivate instant check if input is correct
+
+class SingleLettersMixed(MorseToLetter):
+    title = "Mixed"
+
+    morse_to_letter_mode: bool = False  # True, if a morse-string is converted to a letter at the moment
+    def get_next_challenge(self) -> tuple[str, str]:
+        self.morse_to_letter_mode = random.choice([True, False])
+
+        challenge, solution = super().get_next_challenge()
+
+        if self.morse_to_letter_mode:
+            return challenge, solution
+        else:
+            return solution, challenge
+
+    def input_changed(self):
+        if self.morse_to_letter_mode:
+            super().input_changed()
+        else:
+            pass    # Input should do nothing when not in morse-to-letter-mode
