@@ -37,3 +37,4 @@ def m_decode(text: str, translation_dict: dict = globals.all_chars_invers) -> st
         words
     )
     return " ".join(decoded)
+
