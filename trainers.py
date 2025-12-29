@@ -1,14 +1,16 @@
 import random
 from abc import abstractmethod
-
 import SwiftGUI as sg
-
 import constants
 from morse import m_encode, m_decode
 import globals
 
+from textgeneration import word_generator, sentence_generator
+
+
 class BaseTrainer(sg.BasePopupNonblocking):
     title: str = ""
+    input_fontsize: int = 18
 
     def __init__(self):
         layout_score = [
@@ -36,7 +38,7 @@ class BaseTrainer(sg.BasePopupNonblocking):
                 sg.T(
                     "",
                     key="text",
-                    fontsize=20,
+                    fontsize=self.input_fontsize,
                 )
             ], [
                 sg.Spacer(height=30),
@@ -61,7 +63,7 @@ class BaseTrainer(sg.BasePopupNonblocking):
                 sg.Frame(layout_score, alignment="left")
             ]
         ]
-        self.user_in = user_in
+        self.user_in: sg.Input = user_in
 
         super().__init__(layout, padx=30, pady=30, title= self.title, keep_on_top= True)
         self.start_next_challenge()
@@ -183,3 +185,24 @@ class SingleLettersMixed(MorseToLetter):
             super().input_changed()
         else:
             pass    # Input should do nothing when not in morse-to-letter-mode
+
+class MorseToWord(BaseTrainer):
+    title = "Morse to word"
+    input_fontsize = 12
+
+    def get_next_challenge(self) -> tuple[str, str]:
+        clear_text = word_generator.word(
+            include_categories=["nouns"],
+            word_min_length=2,
+            word_max_length=10,
+            exclude_with_spaces= True,
+        ).upper()
+
+        return m_encode(clear_text, translation_dict= globals.all_chars), clear_text
+
+    def input_changed(self):
+        if len(self.correct_solution) == len(self.user_in.value):
+            super().input_changed()
+        else:
+            self.user_in.update_to_default_value("background_color")
+
