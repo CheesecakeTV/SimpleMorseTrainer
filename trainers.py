@@ -13,6 +13,13 @@ class BaseTrainer(sg.BasePopupNonblocking):
     input_fontsize: int = 18
 
     def __init__(self):
+        layout = self._get_layout()
+
+        super().__init__(layout, padx=30, pady=30, title= self.title, keep_on_top= True, grab_anywhere= True)
+        self.start_next_challenge()
+
+    user_in: sg.Input   # The input-element for the user
+    def _get_layout(self) -> list[list[sg.BaseElement]]:
         layout_score = [
             [
                 sg.T("Correct: ", width=18),
@@ -47,8 +54,9 @@ class BaseTrainer(sg.BasePopupNonblocking):
                     key_function= self.input_changed,
                     default_event=True,
                     justify="center",
-                    fontsize=20,
+                    fontsize=16,
                     width=10,
+                    expand= True
                 ).bind_event(
                     sg.Event.KeyEnter,
                     key_function= self.input_return,
@@ -61,12 +69,19 @@ class BaseTrainer(sg.BasePopupNonblocking):
                 sg.Spacer(height=10),
             ], [
                 sg.Frame(layout_score, alignment="left")
+            ], [
+                sg.Spacer(height= 10)
+            ], [
+                sg.HSep()
+            ], [
+                sg.Spacer(height= 10)
+            ], [
+                sg.Button("Skip (+1 error)", key_function= self.skip)
             ]
         ]
         self.user_in: sg.Input = user_in
 
-        super().__init__(layout, padx=30, pady=30, title= self.title, keep_on_top= True)
-        self.start_next_challenge()
+        return layout
 
     @abstractmethod
     def get_next_challenge(self) -> tuple[str, str]:
@@ -82,7 +97,7 @@ class BaseTrainer(sg.BasePopupNonblocking):
         """Set up and start the next challenge"""
         next_challenge, next_solution = self.get_next_challenge()
 
-        while next_solution == self.correct_solution:
+        while constants.UNKNOWN in next_challenge or next_solution == self.correct_solution:
             # If the same problem occurs twice in a row, redo the challenge
             self.start_next_challenge()
             return
@@ -96,13 +111,13 @@ class BaseTrainer(sg.BasePopupNonblocking):
         """Check if the user entered correctly"""
         return self.user_in.value.strip().upper() == self.correct_solution
 
-    def process_input(self):
+    def process_input(self, clear_if_wrong: bool = True):
         """This should be called when the user-input is done"""
         correct = self.check_user_input()
 
         if correct:
             self.start_next_challenge()
-        else:
+        elif clear_if_wrong:
             self.user_in.value = ""
 
         self.update_score(correct)
@@ -119,16 +134,22 @@ class BaseTrainer(sg.BasePopupNonblocking):
     score_errors = 0
     score_corrects_since_error = 0
     score_best_streak = 0
+    had_an_error_on_this = False    # True, if there already was an error on this challenge
     def update_score(self, correct: bool):
         """Update the score"""
         v = self.w.value
 
         if correct:
+            self.had_an_error_on_this = False
             self.score_correct += 1
             v["score_correct"] = self.score_correct
             self.user_in.update(background_color=constants.GREEN)
             self.score_corrects_since_error += 1
+        elif self.had_an_error_on_this:
+            self.user_in.update(background_color=constants.RED)
+            return
         else:
+            self.had_an_error_on_this = True    # Don't count the error twice
             self.score_errors += 1
             v["score_errors"] = self.score_errors
             self.user_in.update(background_color=constants.RED)
@@ -140,6 +161,13 @@ class BaseTrainer(sg.BasePopupNonblocking):
         if self.score_corrects_since_error > self.score_best_streak:
             self.score_best_streak = self.score_corrects_since_error
             v["score_best_streak"] = self.score_best_streak
+
+    def skip(self):
+        """Skip the current challenge and add an error"""
+        self.update_score(correct= False)
+        self.had_an_error_on_this = False
+
+        self.start_next_challenge()
 
 class MorseToLetter(BaseTrainer):
     title = "Morse to letter"
@@ -190,19 +218,115 @@ class MorseToWord(BaseTrainer):
     title = "Morse to word"
     input_fontsize = 12
 
-    def get_next_challenge(self) -> tuple[str, str]:
-        clear_text = word_generator.word(
+    translation_dict: dict = {   # Add/modify the translation-dict when encoding text
+        " ": " ",   # Space should stay space
+    }
+
+    def __init__(self):
+        temp = globals.all_chars.copy() # Add custom chars
+        temp.update(self.translation_dict)
+        self.translation_dict = temp
+
+        super().__init__()
+
+    def generate_challenge_text(self) -> str:
+        """Generate the word/sentence to input"""
+        return word_generator.word(
             include_categories=["nouns"],
-            word_min_length=2,
-            word_max_length=10,
+            word_min_length=self.len_min,
+            word_max_length=self.len_max,
             exclude_with_spaces= True,
-        ).upper()
+        )
 
-        return m_encode(clear_text, translation_dict= globals.all_chars), clear_text
+    def get_next_challenge(self) -> tuple[str, str]:
+        clear_text = self.generate_challenge_text().upper()
+        return m_encode(clear_text, translation_dict= self.translation_dict), clear_text
 
-    def input_changed(self):
-        if len(self.correct_solution) == len(self.user_in.value):
+    def process_input(self, clear_if_wrong: bool = False):  # Overwritten to not clear the input by default
+        super().process_input(clear_if_wrong= clear_if_wrong)
+
+    def input_changed(self, strip:bool = True):
+        user_input = self.user_in.value
+        if strip:
+            user_input = user_input.strip()
+
+        if len(self.correct_solution) <= len(user_input):
             super().input_changed()
-        else:
+        elif not self.had_an_error_on_this:
             self.user_in.update_to_default_value("background_color")
+
+    def _update_wordlength(self, w: sg.Window, e: str = None, val: float = 0):
+        if e == "len_max":
+            self.len_max = int(val)
+            w["len_min"].update(number_max= val)
+        elif e == "len_min":
+            self.len_min = int(val)
+            w["len_max"].update(number_min= val)
+
+    len_min: int = 4
+    len_max: int = 8
+    def _get_layout(self) -> list[list[sg.BaseElement]]:
+        layout = super()._get_layout()
+
+        layout_word_lengths = [
+            [
+                sg.T("Length (character count)")
+            ],
+            [
+                sg.T("Min: "),
+                sg.Scale(
+                    number_min= 2,
+                    number_max= self.len_max,
+                    default_value=self.len_min,
+                    key="len_min",
+                    default_event=True,
+                    key_function= self._update_wordlength,
+                )
+            ],[
+                sg.T("Max: "),
+                sg.Scale(
+                    number_min=self.len_min,
+                    number_max=17,
+                    default_value=self.len_max,
+                    key= "len_max",
+                    default_event= True,
+                    key_function=self._update_wordlength,
+                )
+            ]
+        ]
+
+        layout += [
+            [
+                sg.Spacer(height= 10),
+            ],
+            [
+                sg.HSep()
+            ],[
+                sg.Frame(layout_word_lengths)
+            ]
+        ]
+
+        return layout
+
+class MorseToString(MorseToWord):
+    title = "Morse to string"
+
+    def generate_challenge_text(self) -> str:
+        included_letters = globals.all_chars.keys()
+        letter_count = random.randint(self.len_min, self.len_max)
+
+        clear_text = "".join(random.choices(list(included_letters), k=letter_count))
+
+        return clear_text
+
+class MorseToSentence(MorseToWord):
+    title = "Morse to Sentence"
+
+    def generate_challenge_text(self) -> str:
+        text = sentence_generator.sentence().replace(".", "")
+        print(text)
+        return text
+
+    def _get_layout(self) -> list[list[sg.BaseElement]]:
+        return super(MorseToWord, self)._get_layout()
 

@@ -1,23 +1,32 @@
 import SwiftGUI as sg
 import trainers
-from trainers import LetterToMorse, MorseToLetter, SingleLettersMixed, MorseToWord
+from trainers import LetterToMorse, MorseToLetter, SingleLettersMixed, MorseToWord, MorseToString, MorseToSentence
 
 
 class MainMenu(sg.BasePopupNonblocking):
     def __init__(self):
         sg.GlobalOptions.Button.fontsize = 12
+        sg.GlobalOptions.Common_Textual.fontsize = 12
 
         layout = [
             [
+                sg.T("--/---/.-./.../.\n-/.-./.-/../-././.-.", justify= "center")
+            ], [
+                sg.Spacer(height=30)
+            ],[
                 self._make_button_group("Single letters", LetterToMorse, MorseToLetter, SingleLettersMixed)
             ],[
                 sg.Spacer(height=8)
             ], [
-                self._make_button_group("Single words", MorseToWord)
+                self._make_button_group("Words/Strings", MorseToWord, MorseToString)
+            ],[
+                sg.Spacer(height=8)
+            ],[
+                self._make_button_group("Sentences", MorseToSentence)
             ]
         ]
 
-        super().__init__(layout, title= "Morse Trainer")
+        super().__init__(layout, title= "Morse Trainer", padx= 30, pady= 30)
 
     @staticmethod
     def _make_button(cls: type[trainers.BaseTrainer]) -> sg.Button:
@@ -25,7 +34,7 @@ class MainMenu(sg.BasePopupNonblocking):
         return sg.Button(
             cls.title,
             key_function= lambda: cls().w.block_others_until_close(),
-            width= 20,
+            width= 26,
         )
 
     def _make_button_group(self, title: str, *classes: type[trainers.BaseTrainer]) -> sg.LabelFrame:
