@@ -4,6 +4,7 @@ import SwiftGUI as sg
 import constants
 from morse import m_encode, m_decode
 import globals
+import utils
 
 from textgeneration import word_generator, sentence_generator
 
@@ -111,12 +112,14 @@ class BaseTrainer(sg.BasePopupNonblocking):
         """Check if the user entered correctly"""
         return self.user_in.value.strip().upper() == self.correct_solution
 
-    def process_input(self, clear_if_wrong: bool = True):
+    def process_input(self, clear_if_wrong: bool = True, ignore_wrong: bool = False):
         """This should be called when the user-input is done"""
         correct = self.check_user_input()
 
         if correct:
             self.start_next_challenge()
+        elif ignore_wrong:
+            return
         elif clear_if_wrong:
             self.user_in.value = ""
 
@@ -179,6 +182,28 @@ class MorseToLetter(BaseTrainer):
         clear_text = "".join(random.choices(list(included_letters), k=letter_count))
 
         return m_encode(clear_text, translation_dict= globals.all_chars), clear_text
+
+class LetterToNato(BaseTrainer):
+    title = "Letter to Nato"
+
+    def get_next_challenge(self) -> tuple[str, str]:
+        alphabet = globals.nato_alphabet
+        return random.choice(tuple(alphabet.items()))
+
+    def input_changed(self):
+        high_len = len(self.correct_solution) < len(self.user_in.value.strip())
+        self.process_input(clear_if_wrong= high_len, ignore_wrong=not high_len)
+
+    def check_user_input(self, correct_threshold:int = 2) -> bool:
+        if super().check_user_input():
+            return True
+
+        user_in = self.user_in.value.strip().upper()
+        if len(user_in) >= len(self.correct_solution):  # Tolerate some typing-errors
+            return utils.levenshtein_distance(user_in, self.correct_solution) <= correct_threshold
+
+        return False
+
 
 class LetterToMorse(MorseToLetter):
     title = "Letter to morse"

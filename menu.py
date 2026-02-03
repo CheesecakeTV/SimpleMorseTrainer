@@ -1,6 +1,6 @@
 import SwiftGUI as sg
 import trainers
-from trainers import LetterToMorse, MorseToLetter, SingleLettersMixed, MorseToWord, MorseToString, MorseToSentence
+from trainers import LetterToMorse, MorseToLetter, SingleLettersMixed, MorseToWord, MorseToString, MorseToSentence, LetterToNato
 
 
 class MainMenu(sg.BasePopupNonblocking):
@@ -23,6 +23,10 @@ class MainMenu(sg.BasePopupNonblocking):
                 sg.Spacer(height=8)
             ],[
                 self._make_button_group("Sentences", MorseToSentence)
+            ], [
+                sg.Spacer(height=8)
+            ], [
+                self._make_button_group("NATO alphabet", LetterToNato)
             ]
         ]
 

@@ -11,3 +11,5 @@ def invert_dict(in_dict: dict) -> dict:
 all_chars = constants.LETTERS
 all_chars_invers = invert_dict(all_chars)
 
+nato_alphabet = constants.NATO_ALPHABET
+
