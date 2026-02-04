@@ -97,6 +97,8 @@ class BaseTrainer(sg.BasePopupNonblocking):
     def start_next_challenge(self):
         """Set up and start the next challenge"""
         next_challenge, next_solution = self.get_next_challenge()
+        next_challenge = next_challenge.upper()
+        next_solution = next_solution.upper()
 
         while constants.UNKNOWN in next_challenge or next_solution == self.correct_solution:
             # If the same problem occurs twice in a row, redo the challenge

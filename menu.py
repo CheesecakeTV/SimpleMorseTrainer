@@ -1,7 +1,7 @@
 import SwiftGUI as sg
 import trainers
 from trainers import LetterToMorse, MorseToLetter, SingleLettersMixed, MorseToWord, MorseToString, MorseToSentence, LetterToNato, LetterToGermanAlphabet
-
+import globals
 
 class MainMenu(sg.BasePopupNonblocking):
     def __init__(self):
@@ -27,10 +27,33 @@ class MainMenu(sg.BasePopupNonblocking):
                 sg.Spacer(height=8)
             ], [
                 self._make_button_group("Spelling alphabet", LetterToNato, LetterToGermanAlphabet)
+            ],[
+                sg.Spacer(height=16)
+            ],[
+                sg.LabelFrame(
+                    [[self._make_configuration_button(section)] for _,section in globals.translation_config.all_sections.items()],
+                    text= "Configure translation",
+                    padx=5,
+                    pady=5,
+                    fontsize= 14,
+                )
             ]
         ]
 
         super().__init__(layout, title= "Morse Trainer", padx= 30, pady= 30)
+
+    @staticmethod
+    def _make_configuration_button(section: sg.Files.ConfigSection) -> sg.Button:
+        """Make a button to configure translation configuration"""
+        return sg.Button(
+            section.section.name,
+            key_function= [
+                lambda: sg.Files.ConfigSectionEditor(section).popup(title= section.section.name),
+                globals.refresh_translations,
+            ],
+            expand= True,
+            width= 26,
+        )
 
     @staticmethod
     def _make_button(cls: type[trainers.BaseTrainer]) -> sg.Button:

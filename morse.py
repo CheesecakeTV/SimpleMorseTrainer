@@ -16,7 +16,7 @@ def m_encode(
     """
     # Todo: This works only for single words atm
     return join_str.join(tuple(map(
-        lambda s:translation_dict.get(s, constants.UNKNOWN),
+        lambda s:translation_dict.get(s.lower(), constants.UNKNOWN),
         text,
     )))
 
