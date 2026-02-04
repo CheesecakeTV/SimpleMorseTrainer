@@ -185,10 +185,10 @@ class MorseToLetter(BaseTrainer):
 
 class LetterToNato(BaseTrainer):
     title = "Letter to Nato"
+    choose_from = globals.nato_alphabet
 
     def get_next_challenge(self) -> tuple[str, str]:
-        alphabet = globals.nato_alphabet
-        return random.choice(tuple(alphabet.items()))
+        return random.choice(tuple(self.choose_from.items()))
 
     def input_changed(self):
         high_len = len(self.correct_solution) < len(self.user_in.value.strip())
@@ -204,6 +204,9 @@ class LetterToNato(BaseTrainer):
 
         return False
 
+class LetterToGermanAlphabet(LetterToNato):
+    title = "Letter to German alphabet"
+    choose_from = globals.german_alphabet
 
 class LetterToMorse(MorseToLetter):
     title = "Letter to morse"

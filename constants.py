@@ -68,6 +68,40 @@ NATO_ALPHABET = {
     "Z": "ZULU",
 }
 
+GERMAN_ALPHABET = {
+    "A": "ANTON",
+    "Ä": "ÄRGER",
+    "B": "BERTA",
+    "C": "CÄSAR",
+    "CH": "CHARLOTTE",
+    "D": "DORA",
+    "E": "EMIL",
+    "F": "FRIEDRICH",
+    "G": "GUSTAV",
+    "H": "HEINRICH",
+    "I": "IDA",
+    "J": "JULIUS",
+    "K": "KAUFMANN",
+    "L": "LUDWIG",
+    "M": "MARTHA",
+    "N": "NORDPOL",
+    "O": "OTTO",
+    "Ö": "ÖKONOM",
+    "P": "PAULA",
+    "Q": "QUELLE",
+    "R": "RICHARD",
+    "S": "SIEGFRIED",
+    "SCH": "SCHULE",
+    "T": "THEODOR",
+    "U": "ULRICH",
+    "Ü": "ÜBEL",
+    "V": "VIKTOR",
+    "W": "WILHELM",
+    "X": "XANTHIPPE",
+    "Y": "YPSILON",
+    "Z": "ZEPPELIN",
+}
+
 # Colors
 GREEN = sg.Color.SpringGreen4
 RED = sg.Color.OrangeRed3

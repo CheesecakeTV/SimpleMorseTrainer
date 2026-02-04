@@ -12,4 +12,5 @@ all_chars = constants.LETTERS
 all_chars_invers = invert_dict(all_chars)
 
 nato_alphabet = constants.NATO_ALPHABET
+german_alphabet = constants.GERMAN_ALPHABET
 
