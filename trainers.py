@@ -17,6 +17,8 @@ class BaseTrainer(sg.BasePopupNonblocking):
         layout = self._get_layout()
 
         super().__init__(layout, padx=30, pady=30, title= self.title, keep_on_top= True, grab_anywhere= True)
+        self.w.bind_event(sg.Event.KeyEscape, key_function=self.close)
+        self.w.bind_event(sg.Event.Control_("q"), key_function=self.close)
         self.start_next_challenge()
 
     user_in: sg.Input   # The input-element for the user

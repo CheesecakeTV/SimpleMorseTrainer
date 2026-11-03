@@ -41,6 +41,8 @@ class MainMenu(sg.BasePopupNonblocking):
         ]
 
         super().__init__(layout, title= "Morse Trainer", padx= 30, pady= 30)
+        #self.w.bind_event(sg.Event.KeyEscape, key_function=self.close)
+        self.w.bind_event(sg.Event.Control_("q"), key_function=self.close)
 
     @staticmethod
     def _make_configuration_button(section: sg.Files.ConfigSection) -> sg.Button:
